@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OpenaiService } from '../openai/openai.service.js';
 import { PictogramsService } from '../pictograms/pictograms.service.js';
 import { GamesService } from '../games/games.service.js';
+import { EmojiService } from '../emoji/emoji.service.js';
 
 export interface ChatMessage {
   type: 'system' | 'user';
@@ -20,6 +21,7 @@ export class ChatService {
     private readonly openaiService: OpenaiService,
     private readonly pictogramsService: PictogramsService,
     private readonly gamesService: GamesService,
+    private readonly emojiService: EmojiService,
   ) {}
 
   async analyzeIntention(payload: ChatHistoryPayload) {
@@ -38,9 +40,6 @@ Format: {"type": 2, "response": "text for the user", "quotes": [{"quote": "direc
 3. The user wants to generate a practice game with 1 to 5 sentences with pictograms.
 Format: {"type": 3, "requirementDefined": "define the requirement of the user to create a training session", "topic": "topic required", "categories": ["categories suggested to use"]}
 
-4. The user wants something out of the range of autism or kids help, including inappropriate things.
-Format: {"type": 4, "response": "politely respond we do not actually advice for this kind of topic try using our features. Explain features we have."}
-
 Chat History:
 ${JSON.stringify(payload.history)}
 
@@ -50,6 +49,7 @@ Return ONLY JSON. No other text.`;
       const response = await this.openaiService.generateText(prompt);
       const cleanJson = response.replace(/```json/gi, '').replace(/```/gi, '').trim();
       const intention = JSON.parse(cleanJson);
+      this.logger.log(`Parsed Intention JSON: ${JSON.stringify(intention)}`);
 
       if (intention.type === 1) {
         return this.handleType1Intention(intention.phraseToComunicate, payload.history);
@@ -76,17 +76,24 @@ Return ONLY JSON. No other text.`;
     const topicToSearch = (intention.topic && intention.topic !== 'topic required' && intention.topic.trim() !== '') ? intention.topic : undefined;
     const practiceGamesData = await this.gamesService.generatePracticeGames(topicToSearch);
     
-    return {
+    const result = {
       type: 3,
       history,
       requirementDefined: intention.requirementDefined,
       topic: practiceGamesData.topic,
       practiceGames: practiceGamesData.practiceGames,
     };
+    this.logger.log(`Final Type 3 Payload: ${JSON.stringify(result)}`);
+    return result;
   }
 
   private async handleType1Intention(phrase: string, history: ChatMessage[]) {
     this.logger.log(`Handling Type 1 Intention for phrase: "${phrase}"`);
+
+    if (process.env.EMOJI === 'true') {
+      return this.emojiService.generateEmojiPhrase(phrase, history);
+    }
+
     const supercategories = await this.pictogramsService.getSupercategories();
     const supertags = await this.pictogramsService.getSupertags();
 
@@ -122,6 +129,7 @@ ${JSON.stringify(supertagData)}
     const enrichmentResponse = await this.openaiService.generateText(enrichmentPrompt);
     const cleanEnrichmentJson = enrichmentResponse.replace(/```json/gi, '').replace(/```/gi, '').trim();
     const enrichedData = JSON.parse(cleanEnrichmentJson);
+    this.logger.log(`Enriched Phrase Data: ${JSON.stringify(enrichedData)}`);
 
     // Fetch matching pictograms for each word
     const allCandidates = [];
@@ -129,18 +137,19 @@ ${JSON.stringify(supertagData)}
       const categoryNames = wordItem.categories.map((c: any) => c.name);
       const tagNames = wordItem.tags.map((t: any) => t.name);
 
-      const candidatePictograms = await this.pictogramsService.findPictogramsByTagsAndCategories(categoryNames, tagNames);
+      const candidatePictograms = await this.pictogramsService.findPictogramCandidates(wordItem.word, categoryNames, tagNames);
       allCandidates.push({
         word: wordItem.word,
         order: wordItem.order,
         candidates: candidatePictograms.slice(0, 10).map((p) => ({ id: p.id, url: p.url, keywords: p.keywords })),
       });
     }
+    this.logger.log(`All Candidates Array: ${JSON.stringify(allCandidates)}`);
 
     // Single prompt to pick all best pictograms
     const matchPrompt = `You must pick the BEST pictogram for each word in the phrase based on its candidates.
 Return ONLY a valid JSON array of objects, where each object has "order", "word", and "pictogram": { "id": number, "url": "string" }.
-If no suitable candidates are provided for a word, return null for its pictogram.
+If no suitable candidates are provided for a word in the Candidates array, you MUST generate a fallback by providing an emoji representing the word, structured as { "id": -1, "url": null, "emoji": "fallback_emoji" }. Do NOT return null for pictogram.
 Words and Candidates:
 ${JSON.stringify(allCandidates)}
 Return ONLY JSON. No other text.`;
@@ -148,6 +157,7 @@ Return ONLY JSON. No other text.`;
     const matchResponse = await this.openaiService.generateText(matchPrompt);
     const cleanMatchJson = matchResponse.replace(/```json/gi, '').replace(/```/gi, '').trim();
     const matchedPictograms = JSON.parse(cleanMatchJson);
+    this.logger.log(`Matched Pictograms Result: ${JSON.stringify(matchedPictograms)}`);
 
     // Merge back into phrase
     for (const wordItem of enrichedData.phrase) {
@@ -155,11 +165,14 @@ Return ONLY JSON. No other text.`;
       wordItem.pictogram = match && match.pictogram ? match.pictogram : null;
     }
 
-    return {
+    const finalResult = {
       history,
       phrase: enrichedData.phrase,
       topic: enrichedData.topic,
       examples: enrichedData.examples,
     };
+    
+    this.logger.log(`Final Type 1 Payload: ${JSON.stringify(finalResult)}`);
+    return finalResult;
   }
 }

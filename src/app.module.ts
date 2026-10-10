@@ -10,6 +10,8 @@ import { KidsModule } from './kids/kids.module.js';
 import { PictogramsModule } from './pictograms/pictograms.module.js';
 import { ChatModule } from './chat/chat.module.js';
 import { GamesModule } from './games/games.module.js';
+import { EmojiModule } from './emoji/emoji.module.js';
+import { SavedPhrasesModule } from './saved-phrases/saved-phrases.module.js';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { GamesModule } from './games/games.module.js';
     PictogramsModule,
     ChatModule,
     GamesModule,
+    EmojiModule,
+    SavedPhrasesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

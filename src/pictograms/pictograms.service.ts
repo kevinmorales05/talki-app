@@ -178,14 +178,26 @@ export class PictogramsService {
     return this.pictogramModel.find(query).exec();
   }
 
-  async findPictogramsByTagsAndCategories(categories: string[], tags: string[]) {
-    const query: any = {};
-    if (categories && categories.length > 0) {
-      query.categories = { $in: categories };
+  async findPictogramCandidates(word: string, categories: string[], tags: string[]) {
+    const orConditions: any[] = [];
+
+    // 1. Direct Keyword Match (Highest probability of success)
+    if (word) {
+      orConditions.push({ keywords: { $regex: new RegExp(`^${word}$`, 'i') } });
     }
+
+    // 2. Tag Match
     if (tags && tags.length > 0) {
-      query.tags = { $in: tags };
+      orConditions.push({ tags: { $in: tags } });
     }
-    return this.pictogramModel.find(query).exec();
+
+    // 3. Category Match
+    if (categories && categories.length > 0) {
+      orConditions.push({ categories: { $in: categories } });
+    }
+
+    if (orConditions.length === 0) return [];
+
+    return this.pictogramModel.find({ $or: orConditions }).exec();
   }
 }

@@ -142,4 +142,39 @@ export class PictogramsService {
       throw new HttpException('Error classifying categories and tags', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  async getSupercategories() {
+    return this.supercategoryModel.find().exec();
+  }
+
+  async getSupercategoryCategories(id: string) {
+    const supercategory = await this.supercategoryModel.findById(id).exec();
+    if (!supercategory) {
+      throw new HttpException('Supercategory not found', HttpStatus.NOT_FOUND);
+    }
+    return supercategory.categories;
+  }
+
+  async getSupertags() {
+    return this.supertagModel.find().exec();
+  }
+
+  async getSupertagTags(id: string) {
+    const supertag = await this.supertagModel.findById(id).exec();
+    if (!supertag) {
+      throw new HttpException('Supertag not found', HttpStatus.NOT_FOUND);
+    }
+    return supertag.tags;
+  }
+
+  async getPictograms(category?: string, tag?: string) {
+    const query: any = {};
+    if (category) {
+      query.categories = category;
+    }
+    if (tag) {
+      query.tags = tag;
+    }
+    return this.pictogramModel.find(query).exec();
+  }
 }

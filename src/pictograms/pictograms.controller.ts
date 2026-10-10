@@ -1,5 +1,5 @@
-import { Controller, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Query, Get, Param } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { PictogramsService } from './pictograms.service.js';
 
 @ApiTags('pictograms')
@@ -25,5 +25,49 @@ export class PictogramsController {
   @ApiResponse({ status: 201, description: 'Classification completed successfully.' })
   async clasifyCatTags() {
     return this.pictogramsService.clasifyCatTags();
+  }
+
+  @Get('supercategories')
+  @ApiOperation({ summary: 'Get all supercategories' })
+  @ApiResponse({ status: 200, description: 'List of all supercategories.' })
+  async getSupercategories() {
+    return this.pictogramsService.getSupercategories();
+  }
+
+  @Get('supercategories/:id/categories')
+  @ApiOperation({ summary: 'Get categories for a determined supercategory by id' })
+  @ApiParam({ name: 'id', description: 'The supercategory ID' })
+  @ApiResponse({ status: 200, description: 'Categories belonging to the supercategory.' })
+  @ApiResponse({ status: 404, description: 'Supercategory not found.' })
+  async getSupercategoryCategories(@Param('id') id: string) {
+    return this.pictogramsService.getSupercategoryCategories(id);
+  }
+
+  @Get('supertags')
+  @ApiOperation({ summary: 'Get all supertags' })
+  @ApiResponse({ status: 200, description: 'List of all supertags.' })
+  async getSupertags() {
+    return this.pictogramsService.getSupertags();
+  }
+
+  @Get('supertags/:id/tags')
+  @ApiOperation({ summary: 'Get tags for a determined supertag by id' })
+  @ApiParam({ name: 'id', description: 'The supertag ID' })
+  @ApiResponse({ status: 200, description: 'Tags belonging to the supertag.' })
+  @ApiResponse({ status: 404, description: 'Supertag not found.' })
+  async getSupertagTags(@Param('id') id: string) {
+    return this.pictogramsService.getSupertagTags(id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get pictograms filtered by category and/or tag' })
+  @ApiQuery({ name: 'category', required: false, description: 'Filter by category name' })
+  @ApiQuery({ name: 'tag', required: false, description: 'Filter by tag name' })
+  @ApiResponse({ status: 200, description: 'List of matching pictograms.' })
+  async getPictograms(
+    @Query('category') category?: string,
+    @Query('tag') tag?: string,
+  ) {
+    return this.pictogramsService.getPictograms(category, tag);
   }
 }

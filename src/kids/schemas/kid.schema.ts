@@ -14,7 +14,7 @@ export class Kid {
   @Prop({ required: false })
   birthday?: Date;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   user_id: string;
 
   @Prop({ required: false, enum: ['down_syndrome', 'autism', 'speech', 'none'] })

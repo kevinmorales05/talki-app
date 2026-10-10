@@ -42,4 +42,13 @@ export class UsersController {
   async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
+
+  @Get('email/:email')
+  @ApiOperation({ summary: 'Get user information by email' })
+  @ApiParam({ name: 'email', description: 'The user email' })
+  @ApiResponse({ status: 200, description: 'User information retrieved successfully.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  async findByEmail(@Param('email') email: string) {
+    return this.usersService.findByEmail(email);
+  }
 }

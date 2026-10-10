@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Put, Param, Delete, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { KidsService } from './kids.service.js';
 import { CreateKidDto } from './dto/create-kid.dto.js';
@@ -32,5 +32,13 @@ export class KidsController {
   @ApiResponse({ status: 404, description: 'Kid not found.' })
   async remove(@Param('id') id: string) {
     return this.kidsService.remove(id);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get all kids belonging to a specific user' })
+  @ApiParam({ name: 'userId', description: 'The user ID' })
+  @ApiResponse({ status: 200, description: 'List of kids belonging to the user.' })
+  async findByUserId(@Param('userId') userId: string) {
+    return this.kidsService.findByUserId(userId);
   }
 }

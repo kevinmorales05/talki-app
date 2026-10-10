@@ -22,5 +22,6 @@ import { OpenaiModule } from '../openai/openai.module.js';
   ],
   controllers: [PictogramsController],
   providers: [PictogramsService],
+  exports: [PictogramsService],
 })
 export class PictogramsModule {}

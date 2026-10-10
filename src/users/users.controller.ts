@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Put, Param, Delete, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
@@ -32,5 +32,14 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found.' })
   async remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user information by ID' })
+  @ApiParam({ name: 'id', description: 'The user ID' })
+  @ApiResponse({ status: 200, description: 'User information retrieved successfully.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  async findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
   }
 }

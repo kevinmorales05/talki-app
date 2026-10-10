@@ -177,4 +177,15 @@ export class PictogramsService {
     }
     return this.pictogramModel.find(query).exec();
   }
+
+  async findPictogramsByTagsAndCategories(categories: string[], tags: string[]) {
+    const query: any = {};
+    if (categories && categories.length > 0) {
+      query.categories = { $in: categories };
+    }
+    if (tags && tags.length > 0) {
+      query.tags = { $in: tags };
+    }
+    return this.pictogramModel.find(query).exec();
+  }
 }

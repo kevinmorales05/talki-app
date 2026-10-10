@@ -12,7 +12,4 @@ export class CreateUserDto {
 
   @ApiProperty({ description: 'The unique Firebase ID' })
   readonly firebase_id: string;
-
-  @ApiProperty({ description: 'Optional special need details', required: false })
-  readonly special_need?: string;
 }

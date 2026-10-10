@@ -8,6 +8,8 @@ import { OpenaiModule } from './openai/openai.module.js';
 import { FirebaseModule } from './firebase/firebase.module.js';
 import { KidsModule } from './kids/kids.module.js';
 import { PictogramsModule } from './pictograms/pictograms.module.js';
+import { ChatModule } from './chat/chat.module.js';
+import { GamesModule } from './games/games.module.js';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { PictogramsModule } from './pictograms/pictograms.module.js';
     FirebaseModule,
     KidsModule,
     PictogramsModule,
+    ChatModule,
+    GamesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

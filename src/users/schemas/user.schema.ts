@@ -16,9 +16,6 @@ export class User {
 
   @Prop({ required: true, unique: true })
   firebase_id: string;
-
-  @Prop({ required: false })
-  special_need?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

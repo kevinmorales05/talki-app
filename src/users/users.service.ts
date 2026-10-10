@@ -29,4 +29,12 @@ export class UsersService {
     }
     return deletedUser;
   }
+
+  async findOne(id: string): Promise<User> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException(`User #${id} not found`);
+    }
+    return user;
+  }
 }

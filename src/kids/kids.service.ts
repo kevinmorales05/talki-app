@@ -29,4 +29,8 @@ export class KidsService {
     }
     return deletedKid;
   }
+
+  async findByUserId(userId: string): Promise<Kid[]> {
+    return this.kidModel.find({ user_id: userId }).exec();
+  }
 }

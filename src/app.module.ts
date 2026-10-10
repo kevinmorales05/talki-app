@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module.js';
 import { OpenaiModule } from './openai/openai.module.js';
 import { FirebaseModule } from './firebase/firebase.module.js';
 import { KidsModule } from './kids/kids.module.js';
+import { PictogramsModule } from './pictograms/pictograms.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { KidsModule } from './kids/kids.module.js';
     OpenaiModule,
     FirebaseModule,
     KidsModule,
+    PictogramsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
